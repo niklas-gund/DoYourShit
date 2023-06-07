@@ -44,14 +44,53 @@ export default class DYSStore {
     this.saveData();
   }
 
+  static editItem(
+    title: string,
+    description: string,
+    priority: PRIORITY,
+    id: number
+  ) {
+    const item = new Item();
+    item.title = title;
+    item.description = description;
+    item.priority = priority;
+    item.id = id;
+
+    const replaceItemFunction = (list: Item[], item: Item) => {
+      list = list.filter((e) => e.id != item.id);
+      list.push(item);
+      return list;
+    };
+
+    if (this.backlog.value.filter((e) => e.id == item.id).length > 0)
+      this.backlog.value = replaceItemFunction(this.backlog.value, item);
+    else if (this.doing.value.filter((e) => e.id == item.id).length > 0)
+      this.doing.value = replaceItemFunction(this.doing.value, item);
+    else if (this.done.value.filter((e) => e.id == item.id).length > 0)
+      this.done.value = replaceItemFunction(this.done.value, item);
+
+    this.sortAllByPriority();
+    this.saveData();
+  }
+
   static getItemByID(id: number) {
     const filteredBacklog = this.backlog.value.filter((e) => e.id == id);
     if (filteredBacklog.length > 0) return filteredBacklog[0];
-    const filteredDoing = this.backlog.value.filter((e) => e.id == id);
+    const filteredDoing = this.doing.value.filter((e) => e.id == id);
     if (filteredDoing.length > 0) return filteredDoing[0];
     const filteredDone = this.done.value.filter((e) => e.id == id);
     if (filteredDone.length > 0) return filteredDone[0];
-    else return null;
+    else {
+      console.log("Returning null");
+      return null;
+    }
+  }
+
+  static removeItemByID(id: number) {
+    this.backlog.value = this.backlog.value.filter((e) => e.id != id);
+    this.doing.value = this.doing.value.filter((e) => e.id != id);
+    this.done.value = this.done.value.filter((e) => e.id != id);
+    this.saveData();
   }
 
   static sortAllByPriority() {
